@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Headline Generator</title>
+	<script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+
+	<style>
+		@font-face {
+		    font-family: adiBlack;
+		    src: url(fonts/adineuePRO-BlackWeb.woff);
+			font-weight:normal !important;
+		}
+		@font-face {
+		    font-family: adiLight;
+		    src: url(fonts/adineuePRO-LightWeb.woff);
+			font-weight:normal !important;
+		}
+		html, body{
+			-webkit-font-smoothing:antialiased !important;
+			font-weight:normal !important;
+			font-kerning: normal;
+			text-align: center;
+			font-family: 'adiLight';
+			background:#eee;
+		}
+		h1{
+			text-transform: uppercase;
+			font-weight: 100;
+			margin:50px;
+		}
+		input, a, select, option{
+			padding:16px;
+			width: 320px;
+			margin:4px auto;
+			display: block;
+			font-family:'adiBlack', arial;
+			text-align: center;
+			text-transform: uppercase;
+			font-size:16px;
+		}
+		canvas{
+			display: block;
+			border:1px solid #eee;
+			margin-bottom: 20px;
+		}
+		.container{
+			margin:auto;
+			width:640px;
+		}
+		.save_btn{
+			
+			padding:16px;
+			width: 320px;
+			margin:30px auto;
+			display: block;
+			background: #000;
+			color: #fff;
+			cursor: pointer;
+		}
+		.save_btn:hover{
+			opacity:0.8;
+		}
+		select{
+			margin-top:20px;
+		}
+	</style>
+</head>
+<body>
+	
+	<div class="container">
+		<h1>Image Generator</h1>
+		<canvas id="canvas" width="640" height="170"></canvas>
+		<input id="title_text" type="text" placeholder="Headline Copy"></input>
+		<input id="title_size" type="text" placeholder="Headline Font Size (72px max)"></input>
+		<input id="title_color" type="text" placeholder="Headline Color"></input>
+		<input id="background_color" type="text" placeholder="Background Color"></input>
+		<select id="title_font" >
+			<option value="adiBlack">adiBlack</option>
+			<option value="adiLight">adiLight</option>
+		</select>
+		<a class="save_btn" download="headline.jpg">Save Image</a>
+	</div>
+
+	<script>
+		var canvas = document.getElementById("canvas");
+		var ctx = canvas.getContext('2d');
+		var canvasHeight;
+
+		function updateCanvas(){
+			
+			// CLEAR CANVAS
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+			//BACKGROUND COLOUR
+			ctx.background_color = $('#background_color').val() || '#fff';
+			ctx.beginPath();
+			ctx.rect(0, 0, canvas.width, canvas.height);
+			ctx.fillStyle = ctx.background_color;
+			ctx.fill();
+
+			// GET TEXT			
+			ctx.title_text = $('#title_text').val().toUpperCase() || 'ENTER YOUR TEXT';
+			ctx.title_size = $('#title_size').val() || '48';
+			ctx.title_color = $('#title_color').val() || '#000';
+			ctx.title_font = $('#title_font').val() || 'adiBlack';
+
+			if(ctx.title_size>72){
+				ctx.title_size = 72;
+				$('#title_size').val(72);
+			}
+
+			//UPDATE TEXT
+			ctx.font = ctx.title_size + "px " + ctx.title_font;
+			ctx.fillStyle = ctx.title_color;
+			ctx.textAlign="center";
+			ctx.textBaseline="hanging"; 
+			
+			// PLACE ON CANVAS
+			wrapText(ctx, ctx.title_text, 320, 60, 580, ctx.title_size);
+		}
+
+		$('input').keyup(updateCanvas);
+		$('select').change(updateCanvas);
+		setInterval(function(){
+			crop();
+		}, 500);
+
+		updateCanvas();
+
+		//GET CORRECT CANVAS HEIGHT
+		function changeCanvasHeight(lineHeight, noOfLines){
+			var multiplier = 500;
+			canvasHeight = (((ctx.measureText('M').width * 1.2) * (lineHeight * 6.5)) / multiplier + 120);
+		    return canvasHeight;
+		}
+
+		//RESIZE CANVAS
+		function crop(){
+			canvas.height = canvasHeight;
+			updateCanvas();
+		}
+
+		//CORRECT WRAPPING
+		function wrapText(ctx, text, x, y, maxWidth, fontSize) {
+		    var words = text.split(' ');
+		    var line = '';
+		    var lineHeight = fontSize*0.8;
+
+		    for(var n = 0; n < words.length; n++) {
+		      var testLine = line + words[n] + ' ';
+		      var metrics = ctx.measureText(testLine);
+		      var testWidth = metrics.width;
+		      if (testWidth > maxWidth && n > 0) {
+		        ctx.fillText(line, x, y);
+		        line = words[n] + ' ';
+		        y += lineHeight;
+		      }
+		      else {
+		        line = testLine;
+		      }
+		    }
+		    changeCanvasHeight(y);
+		    ctx.fillText(line, x, y);
+		   
+		  }
+
+		//SAVE IMAGE
+		$('.save_btn').click(function (e) {
+		    crop();
+		    var dataURL = canvas.toDataURL('image/jpeg');
+		    this.href = dataURL;
+		});
+
+		//LETTER SPACING EXTENSION
+		
+
+	</script>
+</body>
+</html>
