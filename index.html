@@ -75,6 +75,8 @@
 		<input id="title_size" type="text" placeholder="Headline Font Size (72px max)"></input>
 		<input id="title_color" type="text" placeholder="Headline Color"></input>
 		<input id="background_color" type="text" placeholder="Background Color"></input>
+		<input id="margin_top" type="text" placeholder="Margin Top"></input>
+		<input id="margin_bottom" type="text" placeholder="Margin Bottom"></input>
 		<select id="title_font" >
 			<option value="adiBlack">adiBlack</option>
 			<option value="adiLight">adiLight</option>
@@ -101,9 +103,11 @@
 
 			// GET TEXT			
 			ctx.title_text = $('#title_text').val().toUpperCase() || 'ENTER YOUR TEXT';
-			ctx.title_size = $('#title_size').val() || '48';
+			ctx.title_size = $('#title_size').val() || 48;
 			ctx.title_color = $('#title_color').val() || '#000';
 			ctx.title_font = $('#title_font').val() || 'adiBlack';
+			ctx.margin_top = parseInt($('#margin_top').val() || 60);
+			ctx.margin_bottom = parseInt($('#margin_bottom').val() || 40);
 
 			if(ctx.title_size>72){
 				ctx.title_size = 72;
@@ -117,7 +121,7 @@
 			ctx.textBaseline="hanging"; 
 			
 			// PLACE ON CANVAS
-			wrapText(ctx, ctx.title_text, 320, 60, 580, ctx.title_size);
+			wrapText(ctx, ctx.title_text, 320, ctx.margin_top, 560, ctx.title_size);
 		}
 
 		$('input').keyup(updateCanvas);
@@ -130,8 +134,7 @@
 
 		//GET CORRECT CANVAS HEIGHT
 		function changeCanvasHeight(lineHeight, noOfLines){
-			var multiplier = 500;
-			canvasHeight = (((ctx.measureText('M').width * 1.2) * (lineHeight * 6.5)) / multiplier + 120);
+			canvasHeight = ctx.margin_top + ctx.margin_bottom + (lineHeight * noOfLines);
 		    return canvasHeight;
 		}
 
@@ -146,6 +149,7 @@
 		    var words = text.split(' ');
 		    var line = '';
 		    var lineHeight = fontSize*0.8;
+		    var noOfLines = 1;
 
 		    for(var n = 0; n < words.length; n++) {
 		      var testLine = line + words[n] + ' ';
@@ -155,12 +159,13 @@
 		        ctx.fillText(line, x, y);
 		        line = words[n] + ' ';
 		        y += lineHeight;
+		        noOfLines++;
 		      }
 		      else {
 		        line = testLine;
 		      }
 		    }
-		    changeCanvasHeight(y);
+		    changeCanvasHeight(lineHeight, noOfLines);
 		    ctx.fillText(line, x, y);
 		   
 		  }
